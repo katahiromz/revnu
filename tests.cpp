@@ -40,5 +40,18 @@ int main(void)
     a += 1;
     a.println();
 
+    a = "9999";
+    a.println();
+    a <<= 1;
+    a.println();
+    a >>= 2;
+    a.println();
+    b = "1000";
+    a *= b;
+    b.reverse();
+    a.println();
+    a *= b;
+    a.println();
+
     return 0;
 }

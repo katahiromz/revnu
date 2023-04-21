@@ -115,6 +115,18 @@ public:
         trim();
     }
 
+    revnu(const revnu& value)
+        : m_digits(value.m_digits)
+        , m_rev(value.m_rev)
+    {
+    }
+
+    revnu(revnu&& value)
+        : m_digits(std::move(value.m_digits))
+        , m_rev(value.m_rev)
+    {
+    }
+
     revnu& operator=(value_type value)
     {
         m_digits = to_str_t<value_type, char_type>()(value);
@@ -144,6 +156,20 @@ public:
         m_digits = std::move(str);
         m_rev = false;
         trim();
+        return *this;
+    }
+
+    revnu& operator=(const revnu<T_CHAR>& value)
+    {
+        m_digits = value.m_digits;
+        m_rev = value.m_rev;
+        return *this;
+    }
+
+    revnu& operator=(revnu<T_CHAR>&& value)
+    {
+        m_digits = std::move(value.m_digits);
+        m_rev = value.m_rev;
         return *this;
     }
 
@@ -290,7 +316,34 @@ public:
         return *this;
     }
 
+    void operator<<=(value_type value)
+    {
+        if (m_rev)
+            m_digits.insert(0, string_type(value, char_type('0')));
+        else
+            m_digits += string_type(value, char_type('0'));
+    }
+
+    void operator>>=(value_type value)
+    {
+        if (value > size())
+        {
+            clear();
+            return;
+        }
+
+        if (m_rev)
+            m_digits.erase(0, value);
+        else
+            m_digits.erase(size() - value, value);
+    }
+
 protected:
+    size_t size() const
+    {
+        return m_digits.size();
+    }
+
     void resize(size_t new_size)
     {
         if (size() == new_size)
@@ -302,11 +355,6 @@ protected:
         assert(new_size > size());
 
         m_digits += string_type(new_size - size(), char_type('0'));
-    }
-
-    size_t size() const
-    {
-        return m_digits.size();
     }
 };
 
@@ -570,6 +618,9 @@ inline revnu<T_CHAR>& revnu<T_CHAR>::operator*=(const revnu<T_CHAR>& other)
         *this = std::move(copy);
         return *this;
     }
+
+    if (!copy.m_rev)
+        copy.reverse();
 
     revnu<T_CHAR> sum;
     while (copy)
