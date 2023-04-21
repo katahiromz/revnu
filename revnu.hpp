@@ -12,11 +12,70 @@
 namespace katahiromz
 {
 
+//////////////////////////////////////////////////////////////////////////////
+// to_str_t --- glue between std::to_string and std::to_wstring
+
+template <typename T_VALUE, typename T_CHAR>
+struct to_str_t
+{
+    static_assert(sizeof(T_CHAR) == 0, "specialization is failed");
+};
+
+template <typename T_VALUE>
+struct to_str_t<T_VALUE, char>
+{
+    std::basic_string<char> operator()(const T_VALUE& value)
+    {
+        return std::to_string(value);
+    }
+};
+
+template <typename T_VALUE>
+struct to_str_t<T_VALUE, wchar_t>
+{
+    std::basic_string<wchar_t> operator()(const T_VALUE& value)
+    {
+        return std::to_wstring(value);
+    }
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// print_t
+
+template <typename T_CHAR>
+struct print_t
+{
+    static_assert(sizeof(T_CHAR) == 0, "specialization is failed");
+};
+
+template <>
+struct print_t<char>
+{
+    void operator()(const std::string& str, FILE *fout)
+    {
+        std::fputs(str.c_str(), fout);
+    }
+};
+
+template <>
+struct print_t<wchar_t>
+{
+    void operator()(const std::wstring& str, FILE *fout)
+    {
+        using namespace std;
+        fputws(str.c_str(), fout);
+    }
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// revnu<T_CHAR>
+
+template <typename T_CHAR>
 class revnu
 {
 public:
-    typedef char char_type;
-    typedef std::string string_type;
+    typedef T_CHAR char_type;
+    typedef std::basic_string<T_CHAR> string_type;
     typedef size_t value_type;
 
 protected:
@@ -29,7 +88,7 @@ public:
     }
 
     revnu(value_type value)
-        : m_digits(std::to_string(value))
+        : m_digits(to_str_t<value_type, char_type>()(value))
         , m_rev(false)
     {
         trim();
@@ -58,7 +117,7 @@ public:
 
     revnu& operator=(value_type value)
     {
-        m_digits = std::to_string(value);
+        m_digits = to_str_t<value_type, char_type>()(value);
         m_rev = false;
         trim();
         return *this;
@@ -116,22 +175,24 @@ public:
 
     void print() const
     {
-        std::fputs(str().c_str(), stdout);
+        print_t<T_CHAR>()(str(), stdout);
     }
 
-    void print(FILE *fp) const
+    void print(FILE *fout) const
     {
-        std::fputs(str().c_str(), fp);
+        print_t<T_CHAR>()(str(), fout);
     }
 
     void println() const
     {
-        std::printf("%s\n", str().c_str());
+        print();
+        print_t<T_CHAR>()({ '\n' }, stdout);
     }
 
-    void println(FILE *fp) const
+    void println(FILE *fout) const
     {
-        std::fprintf(fp, "%s\n", str().c_str());
+        print(fout);
+        print_t<T_CHAR>()({ '\n' }, fout);
     }
 
     revnu& operator+=(const revnu& other);
@@ -250,103 +311,130 @@ protected:
 };
 
 //////////////////////////////////////////////////////////////////////////////
+// revnu_a, revnu_w, revnu_t
+
+typedef revnu<char> revnu_a;
+typedef revnu<wchar_t> revnu_w;
+
+#ifdef UNICODE
+    typedef revnu_w revnu_t;
+#else
+    typedef revnu_a revnu_t;
+#endif
+
+//////////////////////////////////////////////////////////////////////////////
 // inline functions
 
-inline revnu operator+(const revnu& x, const revnu& y)
+template <typename T_CHAR>
+inline revnu<T_CHAR> operator+(const revnu<T_CHAR>& x, const revnu<T_CHAR>& y)
 {
-    revnu ret = x;
+    revnu<T_CHAR> ret = x;
     ret += y;
     return ret;
 }
 
-inline revnu operator-(const revnu& x, const revnu& y)
+template <typename T_CHAR>
+inline revnu<T_CHAR> operator-(const revnu<T_CHAR>& x, const revnu<T_CHAR>& y)
 {
-    revnu ret = x;
+    revnu<T_CHAR> ret = x;
     ret -= y;
     return ret;
 }
 
-inline revnu operator*(const revnu& x, const revnu& y)
+template <typename T_CHAR>
+inline revnu<T_CHAR> operator*(const revnu<T_CHAR>& x, const revnu<T_CHAR>& y)
 {
-    revnu ret = x;
+    revnu<T_CHAR> ret = x;
     ret *= y;
     return ret;
 }
 
-inline revnu operator+(const revnu& x, const revnu::value_type& y)
+template <typename T_CHAR>
+inline revnu<T_CHAR> operator+(const revnu<T_CHAR>& x, const typename revnu<T_CHAR>::value_type& y)
 {
-    revnu ret = x;
+    revnu<T_CHAR> ret = x;
     ret += y;
     return ret;
 }
 
-inline revnu operator-(const revnu& x, const revnu::value_type& y)
+template <typename T_CHAR>
+inline revnu<T_CHAR> operator-(const revnu<T_CHAR>& x, const typename revnu<T_CHAR>::value_type& y)
 {
-    revnu ret = x;
+    revnu<T_CHAR> ret = x;
     ret -= y;
     return ret;
 }
 
-inline revnu operator*(const revnu& x, const revnu::value_type& y)
+template <typename T_CHAR>
+inline revnu<T_CHAR> operator*(const revnu<T_CHAR>& x, const typename revnu<T_CHAR>::value_type& y)
 {
-    revnu ret = x;
+    revnu<T_CHAR> ret = x;
     ret *= y;
     return ret;
 }
 
-
-inline revnu operator+(const revnu::value_type& x, const revnu& y)
+template <typename T_CHAR>
+inline revnu<T_CHAR> operator+(const typename revnu<T_CHAR>::value_type& x, const revnu<T_CHAR>& y)
 {
-    revnu ret = x;
+    revnu<T_CHAR> ret = x;
     ret += y;
     return ret;
 }
 
-inline revnu operator-(const revnu::value_type& x, const revnu& y)
+template <typename T_CHAR>
+inline revnu<T_CHAR> operator-(const typename revnu<T_CHAR>::value_type& x, const revnu<T_CHAR>& y)
 {
-    revnu ret = x;
+    revnu<T_CHAR> ret = x;
     ret -= y;
     return ret;
 }
 
-inline revnu operator*(const revnu::value_type& x, const revnu& y)
+template <typename T_CHAR>
+inline revnu<T_CHAR> operator*(const typename revnu<T_CHAR>::value_type& x, const revnu<T_CHAR>& y)
 {
-    revnu ret = x;
+    revnu<T_CHAR> ret = x;
     ret *= y;
     return ret;
 }
 
-inline revnu operator<(const revnu& x, const revnu& y)
+template <typename T_CHAR>
+inline revnu<T_CHAR> operator<(const revnu<T_CHAR>& x, const revnu<T_CHAR>& y)
 {
     return x.compare(y) < 0;
 }
 
-inline revnu operator>(const revnu& x, const revnu& y)
+template <typename T_CHAR>
+inline revnu<T_CHAR> operator>(const revnu<T_CHAR>& x, const revnu<T_CHAR>& y)
 {
     return x.compare(y) > 0;
 }
 
-inline revnu operator<=(const revnu& x, const revnu& y)
+template <typename T_CHAR>
+inline revnu<T_CHAR> operator<=(const revnu<T_CHAR>& x, const revnu<T_CHAR>& y)
 {
     return x.compare(y) <= 0;
 }
 
-inline revnu operator>=(const revnu& x, const revnu& y)
+template <typename T_CHAR>
+inline revnu<T_CHAR> operator>=(const revnu<T_CHAR>& x, const revnu<T_CHAR>& y)
 {
     return x.compare(y) >= 0;
 }
 
-inline revnu operator==(const revnu& x, const revnu& y)
+template <typename T_CHAR>
+inline revnu<T_CHAR> operator==(const revnu<T_CHAR>& x, const revnu<T_CHAR>& y)
 {
     return x.compare(y) == 0;
 }
 
-inline revnu operator!=(const revnu& x, const revnu& y)
+template <typename T_CHAR>
+inline revnu<T_CHAR> operator!=(const revnu<T_CHAR>& x, const revnu<T_CHAR>& y)
 {
     return x.compare(y) != 0;
 }
 
-inline int revnu::compare(const revnu& other) const
+template <typename T_CHAR>
+inline int revnu<T_CHAR>::compare(const revnu<T_CHAR>& other) const
 {
     if (size() < other.size())
         return -1;
@@ -355,7 +443,7 @@ inline int revnu::compare(const revnu& other) const
 
     if (m_rev != other.m_rev)
     {
-        revnu copy = *this;
+        revnu<T_CHAR> copy = *this;
         copy.reverse();
         return copy.compare(other);
     }
@@ -381,10 +469,12 @@ inline int revnu::compare(const revnu& other) const
                 return +1;
         }
     }
+
     return 0;
 }
 
-inline revnu& revnu::operator+=(const revnu& other)
+template <typename T_CHAR>
+inline revnu<T_CHAR>& revnu<T_CHAR>::operator+=(const revnu<T_CHAR>& other)
 {
     if (size() < other.size())
     {
@@ -415,13 +505,14 @@ inline revnu& revnu::operator+=(const revnu& other)
         }
     }
 
-    revnu copy = other;
+    revnu<T_CHAR> copy = other;
     copy += *this;
     *this = std::move(copy);
     return *this;
 }
 
-inline revnu& revnu::operator-=(const revnu& other)
+template <typename T_CHAR>
+inline revnu<T_CHAR>& revnu<T_CHAR>::operator-=(const revnu<T_CHAR>& other)
 {
     if (size() < other.size())
     {
@@ -452,14 +543,14 @@ inline revnu& revnu::operator-=(const revnu& other)
         }
         else
         {
-            revnu copy = other;
+            revnu<T_CHAR> copy = other;
             copy.reverse();
             *this -= copy;
         }
     }
     else
     {
-        revnu copy = other;
+        revnu<T_CHAR> copy = other;
         copy.resize(size());
         if (!copy.m_rev)
             copy.reverse();
@@ -469,9 +560,10 @@ inline revnu& revnu::operator-=(const revnu& other)
     return *this;
 }
 
-inline revnu& revnu::operator*=(const revnu& other)
+template <typename T_CHAR>
+inline revnu<T_CHAR>& revnu<T_CHAR>::operator*=(const revnu<T_CHAR>& other)
 {
-    revnu copy = other;
+    revnu<T_CHAR> copy = other;
     if (*this < other)
     {
         copy *= *this;
@@ -479,7 +571,7 @@ inline revnu& revnu::operator*=(const revnu& other)
         return *this;
     }
 
-    revnu sum;
+    revnu<T_CHAR> sum;
     while (copy)
     {
         sum += *this;
@@ -501,7 +593,8 @@ inline void str_trim_right(std::basic_string<T_CHAR>& str, T_CHAR ch)
         str = str.substr(0, j + 1);
 }
 
-inline void revnu::trim()
+template <typename T_CHAR>
+inline void revnu<T_CHAR>::trim()
 {
     if (!m_rev)
         reverse();

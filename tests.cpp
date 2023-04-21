@@ -5,9 +5,9 @@ int main(void)
 {
     using namespace katahiromz;
 
-    revnu a = 1;
+    revnu_t a = 1;
     a.println();
-    revnu b = 2;
+    revnu_t b = 2;
     b.println();
 
     a += b;
@@ -31,7 +31,11 @@ int main(void)
     a.clear();
     a.println();
 
+#ifdef UNICODE
+    a = L"999999999999999999999999999999";
+#else
     a = "999999999999999999999999999999";
+#endif
     a.println();
     a += 1;
     a.println();
