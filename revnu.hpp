@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////
-// revnu --- reversible numeric
+// revnu --- reversible numeric for C++11
 
 #pragma once
 
@@ -29,41 +29,31 @@ public:
     }
 
     revnu(value_type value)
+        : m_digits(std::to_string(value))
+        , m_rev(false)
     {
-        m_digits = std::to_string(value);
-        m_rev = false;
         trim();
     }
 
     revnu(const char_type *str, bool rev = false)
+        : m_digits(str)
+        , m_rev(rev)
     {
-        m_digits = str;
-        m_rev = rev;
         trim();
     }
 
     revnu(const string_type& str, bool rev = false)
+        : m_digits(str)
+        , m_rev(rev)
     {
-        m_digits = str;
-        m_rev = rev;
         trim();
     }
 
     revnu(string_type&& str, bool rev = false)
+        : m_digits(std::move(str))
+        , m_rev(rev)
     {
-        m_digits = std::move(str);
-        m_rev = rev;
         trim();
-    }
-
-    char_type operator[](size_t index) const
-    {
-        return m_digits[index];
-    }
-
-    char_type& operator[](size_t index)
-    {
-        return m_digits[index];
     }
 
     revnu& operator=(value_type value)
@@ -133,7 +123,7 @@ public:
     string_type str() const
     {
         if (m_digits.empty())
-            return "0";
+            return { char_type('0') };
         if (!m_rev)
             return m_digits;
         auto d = m_digits;
