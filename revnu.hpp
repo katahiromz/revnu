@@ -583,6 +583,17 @@ inline revnu<T_CHAR>& revnu<T_CHAR>::operator*=(const revnu<T_CHAR>& other)
 }
 
 template <typename T_CHAR>
+inline void str_trim_left(std::basic_string<T_CHAR>& str, T_CHAR ch)
+{
+    typedef std::basic_string<T_CHAR> string_type;
+    size_t j = str.find_first_not_of(ch);
+    if (j == string_type::npos)
+        str.clear();
+    else
+        str = str.substr(j);
+}
+
+template <typename T_CHAR>
 inline void str_trim_right(std::basic_string<T_CHAR>& str, T_CHAR ch)
 {
     typedef std::basic_string<T_CHAR> string_type;
@@ -597,8 +608,9 @@ template <typename T_CHAR>
 inline void revnu<T_CHAR>::trim()
 {
     if (!m_rev)
-        reverse();
-    str_trim_right(m_digits, char_type('0'));
+        str_trim_left(m_digits, char_type('0'));
+    else
+        str_trim_right(m_digits, char_type('0'));
 }
 
 } // namespace katahiromz
