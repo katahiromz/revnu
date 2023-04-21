@@ -35,21 +35,21 @@ public:
         trim();
     }
 
-    revnu(const char *str, bool rev = false)
+    revnu(const char_type *str, bool rev = false)
     {
         m_digits = str;
         m_rev = rev;
         trim();
     }
 
-    revnu(const std::string& str, bool rev = false)
+    revnu(const string_type& str, bool rev = false)
     {
         m_digits = str;
         m_rev = rev;
         trim();
     }
 
-    revnu(std::string&& str, bool rev = false)
+    revnu(string_type&& str, bool rev = false)
     {
         m_digits = std::move(str);
         m_rev = rev;
@@ -74,7 +74,7 @@ public:
         return *this;
     }
 
-    revnu& operator=(const char *str)
+    revnu& operator=(const char_type *str)
     {
         m_digits = str;
         m_rev = false;
@@ -82,7 +82,7 @@ public:
         return *this;
     }
 
-    revnu& operator=(const std::string& str)
+    revnu& operator=(const string_type& str)
     {
         m_digits = str;
         m_rev = false;
@@ -90,7 +90,7 @@ public:
         return *this;
     }
 
-    revnu& operator=(std::string&& str)
+    revnu& operator=(string_type&& str)
     {
         m_digits = std::move(str);
         m_rev = false;
@@ -457,7 +457,7 @@ inline revnu& revnu::operator*=(const revnu& other)
 }
 
 template <typename T_CHAR>
-inline void str_trim_right(std::basic_string<T_CHAR>& str, char ch)
+inline void str_trim_right(std::basic_string<T_CHAR>& str, T_CHAR ch)
 {
     typedef std::basic_string<T_CHAR> string_type;
     size_t j = str.find_last_not_of(ch);
