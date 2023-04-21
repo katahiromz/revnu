@@ -168,7 +168,7 @@ public:
         return true;
     }
 
-    operator bool() const
+    explicit operator bool() const
     {
         return !is_zero();
     }
@@ -266,6 +266,49 @@ inline revnu operator-(const revnu& x, const revnu& y)
 }
 
 inline revnu operator*(const revnu& x, const revnu& y)
+{
+    revnu ret = x;
+    ret *= y;
+    return ret;
+}
+
+inline revnu operator+(const revnu& x, const revnu::value_type& y)
+{
+    revnu ret = x;
+    ret += y;
+    return ret;
+}
+
+inline revnu operator-(const revnu& x, const revnu::value_type& y)
+{
+    revnu ret = x;
+    ret -= y;
+    return ret;
+}
+
+inline revnu operator*(const revnu& x, const revnu::value_type& y)
+{
+    revnu ret = x;
+    ret *= y;
+    return ret;
+}
+
+
+inline revnu operator+(const revnu::value_type& x, const revnu& y)
+{
+    revnu ret = x;
+    ret += y;
+    return ret;
+}
+
+inline revnu operator-(const revnu::value_type& x, const revnu& y)
+{
+    revnu ret = x;
+    ret -= y;
+    return ret;
+}
+
+inline revnu operator*(const revnu::value_type& x, const revnu& y)
 {
     revnu ret = x;
     ret *= y;

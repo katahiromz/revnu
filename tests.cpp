@@ -5,9 +5,9 @@ int main(void)
 {
     using namespace katahiromz;
 
-    revnu a(1);
+    revnu a = 1;
     a.println();
-    revnu b(2);
+    revnu b = 2;
     b.println();
 
     a += b;
@@ -26,7 +26,7 @@ int main(void)
     a = 30;
     b = 10;
     (a - b).println();
-    ((a - b) * revnu(2)).println();
+    ((a - b) * 2).println();
 
     a.clear();
     a.println();
