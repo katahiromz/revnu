@@ -13,5 +13,6 @@ project(revnu CXX)
 
 # tests.exe
 add_executable(tests tests.cpp)
+#target_compile_definitions(tests PRIVATE -DUNICODE -D_UNICODE) # Unicode support
 
 ##############################################################################
