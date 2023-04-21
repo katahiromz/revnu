@@ -100,24 +100,6 @@ public:
         m_rev = !m_rev;
     }
 
-    size_t size() const
-    {
-        return m_digits.size();
-    }
-
-    void resize(size_t new_size)
-    {
-        if (size() == new_size)
-            return;
-
-        if (!m_rev)
-            reverse();
-
-        assert(new_size > size());
-
-        m_digits += string_type(new_size - size(), char_type('0'));
-    }
-
     void trim();
 
     string_type str() const
@@ -245,6 +227,25 @@ public:
         if (index == size())
             throw std::overflow_error("revnu::operator--");
         return *this;
+    }
+
+protected:
+    void resize(size_t new_size)
+    {
+        if (size() == new_size)
+            return;
+
+        if (!m_rev)
+            reverse();
+
+        assert(new_size > size());
+
+        m_digits += string_type(new_size - size(), char_type('0'));
+    }
+
+    size_t size() const
+    {
+        return m_digits.size();
     }
 };
 
